@@ -11,6 +11,11 @@ class LogAnalyticsMiTokenProvider
   def initialize (logstashLoganalyticsConfiguration)
     scope = CGI.escape("#{logstashLoganalyticsConfiguration.get_monitor_endpoint}")
     @token_request_uri = sprintf("http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=%s", scope)
+    
+    # Add object_id parameter if specified for user-assigned managed identity
+    if !logstashLoganalyticsConfiguration.managed_identity_object_id.nil? && !logstashLoganalyticsConfiguration.managed_identity_object_id.empty?
+      @token_request_uri += sprintf("&object_id=%s", CGI.escape(logstashLoganalyticsConfiguration.managed_identity_object_id))
+    end
     # https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/how-to-use-vm-token
     @token_state = {
       :access_token => nil,
